@@ -22,12 +22,12 @@
 ## Assign the value 82 to the variable x
 ## Print x
 x <- 82
-x
+print(x)
 
 ## Assign the value 41 to the variable y
 ## Print y
 y <- 41
-y
+print(y)
 
 ## Assign the output of x + y to the variable z
 ## Print z
