@@ -23,7 +23,7 @@ week1_sleep[3]
 
 ## Create a vector called `week1_sleep_weekdays`
 ## Assign the weekday values using indice slicing
-week1_sleep_weekdays <- week1_sleep[1:5]
+week1_sleep_weekdays <- week1_sleep[2:6]
 
 ## Add the total hours slept in week one using the `sum` function
 ## Assign the value to variable `total_sleep_week1`
@@ -38,7 +38,7 @@ week2_sleep <- c(7.1, 7.4, 7.9, 6.5, 8.1, 8.2, 8.9)
 total_sleep_week2 <- sum(week2_sleep)
 
 ## Determine if the total sleep in week 1 is less than week 2 by using the < operator
-total_sleep_week1 < total_sleep_week2
+print(total_sleep_week1 < total_sleep_week2)
 
 ## Calculate the mean hours slept in week 1 using the `mean()` function
 mean(week1_sleep)
@@ -46,7 +46,6 @@ mean(week1_sleep)
 ## Create a vector called `days` containing the days of the week.
 ## Start with Sunday and end with Saturday
 days <-c("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday")
-days[3]
 
 ## Assign the names of each day to `week1_sleep` and `week2_sleep` using the `names` function and `days` vector
 names(week1_sleep) <- days
