@@ -1,0 +1,95 @@
+---
+title: "ASSIGNMENT 4"
+author: "Mithil Patel"
+date: '2012-04-24'
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+bibliography: bibliography.bib
+---
+
+# Markdown Basics
+
+## Favorite Foods
+1. Chipotle
+2. Tacos
+3. Ice Cream
+
+## Images
+![COVID-19 Cases](/Users/mithil29/Desktop/dsc520/completed/assignment04/plots/10-all-cases-log.png)
+
+## Add a Quote
+"Once we accept our limits, we go beyond them." -Albert Einstein
+
+## Add an Equation
+$$ G_{\mu\nu} + \Lambda g_{\mu\nu} = \kappa T_{\mu\nu} $$
+
+## Add a Footnote
+
+^[The equation (the Einstein field equation) above was proposed by Albert Einstein in 1915
+to describe the geometry of spacetime in presence of matter.]
+^[The images shows the number of COVID-19 cases in Florida, California, and New York over the span of three month.]
+
+## Add Citations
+
+* R for Everyone [@lander2014r]
+* Discovering Statistics Using R [@field2012discovering]
+
+# Inline Code
+``` {r include = FALSE}
+library(ggplot2)
+heights_df <- read.csv('/Users/mithil29/Desktop/dsc520/data/r4ds/heights.csv')
+covid_df <- read.csv('/Users/mithil29/Desktop/dsc520/data/nytimes/covid-19-data/us-states.csv')
+covid_df$date <- as.Date(covid_df$date)
+california_df <- covid_df[ which( covid_df$state == "California"), ]
+ny_df <- covid_df[ which( covid_df$state == 'New York'), ]
+florida_df <- covid_df[ which( covid_df$state == "Florida"), ]
+```
+## NY Times COVID-19 Data
+```{r echo= FALSE}
+plo <- ggplot(data=florida_df, aes(x=date, group=1)) + 
+  geom_line(aes(y = cases, colour = "Florida")) +
+  geom_line(data=ny_df, aes(y = cases,colour="New York")) +
+  geom_line(data=california_df, aes(y = cases, colour="California")) +
+  scale_colour_manual("",
+                      breaks = c("Florida", "New York", "California"),
+                      values = c("Florida"= "darkred" , 
+                                 "New York" = "darkgreen",
+                                 "California" = "steelblue")) +
+  xlab("Dates") + ylab("Cases") + scale_y_log10()
+plo + theme_set(theme_minimal())
+```
+
+
+## R4DS Height vs Earnings
+```{r echo= FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+height_plot <- ggplot(heights_df, aes(x= height, y= earn, col= sex)) + 
+  geom_point() + ggtitle("Height vs. Earnings") + xlab("Height (Inches") + 
+  ylab("Earnings (Dollars)")
+height_plot 
+```
+
+# Tables
+
+## Knitr Table with Kable
+```{r echo= FALSE, results='asis'}
+library(knitr)
+name <- c("Aragon", "Bilbo", "Frodo", "Galadriel", "Sam", "Gandalf", "Legolas", "Sauron", "Gollum")
+race <- c("Men", "Hobbit", "Hobbit", "Elf", "Hobbit", "Maia", "Elf", "Maia", "Hobbit")
+in_fellowship <- c(TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE)
+ring_bearer <- c(FALSE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE, TRUE, TRUE)
+age <- c(88, 129, 51, 7000, 36, 2019, 2931, 7052, 589)
+
+characters_df <- data.frame(name, race, in_fellowship, ring_bearer, age)
+knitr::kable(characters_df, caption = "One Ring to Rule Them All")
+```
+## Pandoc Table
+```{r echo=FALSE, results='asis'}
+library(pander)
+pandoc.table(head(characters_df, 5),justify = 'left')
+```
+
+# References
+
