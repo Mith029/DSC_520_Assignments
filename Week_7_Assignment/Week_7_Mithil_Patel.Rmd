@@ -1,0 +1,76 @@
+---
+title: "Week 7"
+author: "Mithil Patel"
+output:
+  pdf_document: default
+date: '2022-04-25'
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+## Covariance
+
+```{r comment = NA, echo= FALSE}
+survey_df <- read.csv("student-survey.csv")
+cov(survey_df)
+```
+
+i) The covariance is an important factor to determine whether two variables
+contain a positive or negative relationship with each other. From the matrix above, there exists a strong positive relationship between time watching TV and 
+happiness. On the contrary, there is a weak negative relationship between time spent reading and time watching TV along with time spent reading and happiness. The covariance values for gender versus the three other variables (TimeReading, timeTV, and Happiness) are approximately zero indicating no relationship between them.   
+
+## Level of Measurements
+
+TimeReading(hour): Ratio
+
+TimeTV(minute): Ratio
+
+Happiness(percentage): Ratio
+
+Gender(label): Nominal
+```{r comment = NA, echo= FALSE, message= FALSE}
+library(dplyr)
+library(purrr)
+hour_df <- survey_df %>%
+  mutate(NewTimeTV = TimeTV/60) %>%
+  select(TimeReading, NewTimeTV, Happiness, Gender)
+cov(hour_df)
+```
+
+ii) To evaluate the effect changing variables have on covariance, I will change the 'TimeTV' unit from minutes to hours and compare the covariance matrix. Based on the new matrix, the covariance value (-0.340) suggests that there exists no relationship between 'NewTimeTV' and 'TimeReading', which is different from the earlier conclusion -- that there is a weak negative relationship. In essence, changing measurement for 'TimeTv' has resulted in no relationship with the other three variables; therefore, speculating a relationship based on covariance value can lead to many problems. Compare to covariance, the correlation coefficient tends to produce more promising results since it is not affected by the change in measurement. 
+
+## Correlation test
+iii) I will be performing a paired samples correlation test because we want to analyze 
+the significant relationship between the amount of time reading and the time spent watching television. Based on the covariance value above, we can be certain that the  correlation test will yield a negative correlation. 
+
+## Correlation
+```{r comment = NA, echo= FALSE}
+cor(survey_df, method = "pearson")
+cor.test(survey_df$TimeReading,survey_df$TimeTV, method = "pearson")
+
+# Correlation with 99 percent confidence interval
+cor.test(survey_df$TimeReading,survey_df$TimeTV, method = "pearson", 
+         conf.level = 0.99)
+```
+
+iv) Based on the calculated correlation matrix above, we can see that there is a strong inverse relationship between Time spent reading and watching TV. Additionally, we see that there is an inverse relationship between time spent reading and happiness and a positive relationship between time spent watching TV and happiness.There's a non-existing relationship between gender and other three variables; happiness, TimeReading, and TimeTV. 
+
+## Correlation Coefficient and Coefficient of Determination
+```{r comment = NA, echo= FALSE}
+cor(survey_df)
+
+cor(survey_df)**2
+```
+v) The coefficient of determination (CoD) estimates a linear relationship between two variables based on the variability in one variable that can be attributed to the second variable. From the coefficient of determination matrix above, we get that the CoD (r^2 = 0.780) between 'TimeTv and 'TimeReading' is the largest among the relationships. In fact, only one relationship has a CoD value above 0.60 and can considerate a "good" CoD  to make a claim about a correlation between two variables. Therefore, it is safe to conlude that there is a strong correlation between them 'TimeTv and 'TimeReading'. 
+
+vi) Based on the analysis the correlation coefficient and coefficient of determination (CoD) matrix above, we can conclude that watching more TV did indeed caused students to read less. The correlation coefficient (r= -0.8831) shows, together with high CoD value(r^2 = 0.780), that there is an inverse correlation between reading and watching TV.
+
+
+vii) To perform a partial correlation, we will evaluate a linear relationship between time watching TV and reading while keeping happiness as the controlled variable.  As shown below, the estimated partial correlation is 0.873 (ignore the negative sign) with significantly small p-val and high statistical value, which suggest that happiness partially explain the casual relationship between watching TV and reading. In other words, there exist other possible variables (i.e. happiness) that could explain the inverse correlation between reading and watching TV. As a result, this certainly changes our interpretation of the results because we cannot surely claim that watching tv results in reading less. 
+```{r comment = NA, echo= FALSE,message= FALSE}
+library(ppcor)
+pcor.test(survey_df$TimeReading,survey_df$TimeTV,survey_df$Happiness, 
+          method = "pearson")
+```
+
