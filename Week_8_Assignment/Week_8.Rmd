@@ -1,5 +1,5 @@
 ---
-title: "week 8 Assignment"
+title: "Week 8 Assignment"
 author: "Mithil Patel"
 output:
   pdf_document: default
