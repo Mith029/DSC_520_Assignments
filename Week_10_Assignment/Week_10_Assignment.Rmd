@@ -1,0 +1,51 @@
+---
+title: "Week 10 Assignment"
+author: "Mithil Patel"
+date: '2022-05-16'
+output: pdf_document
+---
+## Binary Logistic Regression
+```{r echo=FALSE, comment=NA, warning=FALSE}
+library(foreign)
+library(caTools)
+
+df <- read.arff("ThoraricSurgery.arff")
+df_split <- sample.split(df, SplitRatio = 0.8)
+train_data <- subset(df, df_split == "TRUE")
+test_data <- subset(df, df_split == "FALSE")
+binary_log_regression <- glm(Risk1Yr~ DGN + PRE4 + PRE5 + PRE6 +PRE7 + PRE8 + PRE9 + PRE10 + PRE11 + PRE14 + PRE17 + PRE19 + PRE25 + PRE30 + PRE32, data = df, family = binomial())
+summary(binary_log_regression)
+```
+
+**Based on the Pr(>|z|) value in model summary, the variable that has the greatest effect on survival rate is *PRE9T*.**
+
+**Model accuracy percentage:**
+
+```{r echo=FALSE, comment=NA, warning=FALSE}
+glm_test_Pred <- predict(binary_log_regression, test_data, type = "response")
+glm_train_pred <- predict(binary_log_regression, train_data, type = "response")
+
+confusion_matrix <- table(true_val = train_data$Risk1Yr, 
+                          predicted_val = glm_train_pred > 0.5)
+(confusion_matrix[[1,1]] + confusion_matrix[[2,2]])/sum(confusion_matrix)
+```
+
+
+## Logistic Regression Classifier
+**Confusion matrix:**
+```{r echo=FALSE, comment=NA, warning=FALSE}
+binary_df <- read.csv("binary-classifier-data.csv")
+label_glm <- glm(label ~ x + y, data = binary_df, family = "binomial")
+predict_label <- predict(label_glm, binary_df, type = "response")
+binary_df$predict_label <- ifelse(predict_label >= 0.5, 1, 0)
+label_confmatric <- table(factor(binary_df$predict_label, levels=min(binary_df$label):max(binary_df$label)), 
+      factor(binary_df$label, levels=min(binary_df$label):max(binary_df$label)))
+prop.table(label_confmatric)
+```
+
+**Model accuracy percentage:**
+```{r echo=FALSE, comment=NA, warning=FALSE}
+binary_df$accuracy <- binary_df$predict_label == binary_df$label
+(sum(binary_df$accuracy)/nrow(binary_df))*100
+```
+
