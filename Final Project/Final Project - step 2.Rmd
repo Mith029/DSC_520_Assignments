@@ -10,7 +10,7 @@ output: pdf_document
 df_cardio <- read.csv("framingham.csv")
 df_heart <- read.csv("heart.csv")
 ```
-There cardio dataset contains 4238 rows while heart dataset has 1025 rows. We shall shrink the cardio dataframe size to match the heart dataframe size. 
+The cardio dataset contains 4238 rows while the heart dataset has 1025 rows. We shall shrink the cardio dataframe size to match the heart dataframe size. 
 
 ```{r echo=FALSE, comment= NA, warning=FALSE, message=FALSE}
 library(dplyr)
@@ -20,7 +20,7 @@ sapply(combined_df, function(x) sum(is.na(x)))
 
 ```
 
-The chart above shows the number of NA values in each column. Since both data frames do not have a specific column (i.e. 'id') in common, we shall utilize an in-built bind_rows function in r to combine data frame by the 'target' column, which determines whether or not an individual has a heart condition. However, there is a con when using bind_row to combine two different data frames half of your combined data frame contains na values. To handle na values present in our data frame, we will replace na values with column mean. 
+The chart above shows the number of NA values in each column. Since both data frames do not have a specific column (i.e. 'id') in common, we shall utilize an in-built bind_rows function in r to combine data frame by the 'target' column, which determines whether or not an individual has a heart condition. However, there is a con when using bind_row to combine two different data frames half of your combined data frame contains NA values. To handle NA values present in our data frame, we will replace NA values with column mean.
 
 ```{r include=FALSE, echo=FALSE, comment= NA, warning=FALSE}
 combined_df[] <- lapply(combined_df, function(x){
@@ -31,9 +31,9 @@ combined_df <- combined_df %>% select(target, everything())
 round(cor(combined_df),2)
 ```
 
-We have created a 28x28 correlation matrix to get a rough estimate as to which variables appear to be correlated with our 'target' variable. Any correlation value above 0.20 or below -.20 will be considered in our final data frame.
+We have created a 28x28 correlation matrix to get a rough estimate as to which variables appear to be correlated with our 'target' variable. Any correlation value above 0.20 or below -0.20 will be considered in our final data frame.
 
-**Note: The correlation matrix is not shown due to inconsistent matrix format**
+**Note: The correlation matrix is not shown due to inconsistent matrix format.**
 
 
 ## What does the final data set look like?
@@ -46,7 +46,7 @@ tail(combined_df, 35)
 ```
 
 ## Questions for future steps
-Initially going through to import and clean the dataset, there were some struggles such as combining the two datasets with similar columns (e.g. 'target' column) would end up multiplying the rows and columns together instead of merging them by columns. For instance, two datasets, one with 1000 rows and the other with 4000 rows, would produce a total of 4,000,000 rows. to tackle the issue, I used one of the R programming language functions called bind_rows which stacks the rows from the two datasets appropriately. If columns and rows didn't match the two datasets, then those entries were filled with 'N/A'. Considering that a large portion of the combined dataset was filled with NA values, I had to take the mean of the columns and replace the entries with the mean values. 
+Initially going through to import and clean the dataset, there were some struggles such as combining the two datasets with similar columns (e.g. 'target' column) would end up multiplying the rows and columns together instead of merging them by columns. For instance, two datasets, one with 1000 rows and the other with 4000 rows, would produce a total of 4,000,000 rows. To tackle the issue, I used one of the R programming language functions called bind_rows which stacks the rows from the two datasets appropriately. If columns and rows didn't match the two datasets, then those entries were filled with 'N/A'. Considering that a large portion of the combined dataset was filled with NA values, I had to take the mean of the columns and replace the entries with the mean values. For future steps, I need to find a way to efficiently merge two datasets by same column in order to avoid plethora of NA values in my dataset. 
 
 ## What information is not self-evident? 
 
@@ -54,7 +54,7 @@ One way to identify outliers in the data is by using a boxplot which helps to sh
 
 ## What are different ways you could look at this data?
 
-One very helpful tool that can further answer our questions is by creating a logistic model to determine which variables from our dataset are more significant than others. By analyzing the summary of our logistic model, we can determine the effect each variable will have on the dependent variable (heart disease) based on the p-values. Thus, we'll be able to identify which variables are strong risk factors and the leading causes of death. Before creating a logistic model, we can also perform a normal regression to check for multicollinearity and high VIF value to determine whether or not the distribution is normal. 
+One very helpful tool that can further answer our questions is by creating a logistic model to determine which variables from our dataset are more significant than others. By analyzing the summary of our logistic model, we can determine the effect each variable will have on the dependent variable (heart disease) based on the p-values. Thus, we'll be able to identify which variables are strong risk factors that has attributed to the leading causes of death in the U.S. Before creating a logistic model, we can also perform a normal regression to check for multicollinearity and high VIF value to determine whether or not the distribution is normal. 
 
 ## How do you plan to slice and dice the data?
 
