@@ -1,0 +1,108 @@
+---
+title: "Week 11"
+author: "Mithil Patel"
+date: '2022-06-04'
+output: pdf_document
+---
+## K-nearest neighbor (KNN)
+
+**Binary Dataset Scatter plot **
+
+```{r echo=FALSE, comment=NA, warning=FALSE, message=FALSE}
+library(tidyverse)
+binary_df <- read.csv("binary-classifier-data.csv")
+trinary_df <- read.csv("trinary-classifier-data.csv")
+ggplot(binary_df, aes(x= x, y= label)) + geom_point(size= 0.1) + geom_point(aes(color= label))
+```
+
+**Trinary Dataset Scatter plot **
+
+```{r echo=FALSE, comment=NA, warning=FALSE, message=FALSE}
+ggplot(trinary_df, aes(x= x, y= label)) + geom_point(size= 0.1) + geom_point(aes(color= label))
+```
+
+**KNN model accuracy with different k values**
+
+```{r echo=FALSE, comment=NA, warning=FALSE, message=FALSE}
+set.seed(12)
+library(caret)
+library(class)
+
+## Binary classifier
+training_Index=createDataPartition(binary_df$label, p=0.8)$Resample1
+train_Binary= binary_df[training_Index,] 
+test_Binary= binary_df[-training_Index,]
+
+k_number = c(3, 5, 10, 15, 20, 25)
+accuracy_Bin <- c()
+index = 0
+for (i in k_number) { 
+        index = index + 1
+        kModBin <- knn(train= train_Binary, test=test_Binary, cl=train_Binary$label, k=i )
+        accuracy_Bin[index] <- 100*sum(test_Binary$label == kModBin)/NROW(test_Binary$label)
+}
+
+accuracy_df <- data.frame(k_number,accuracy_Bin)
+
+## Trinary classifier
+train_Index =createDataPartition(trinary_df$label, p=0.8)$Resample1
+train_Trinary= trinary_df[train_Index,] 
+test_Trinary= trinary_df[-train_Index,]
+
+accuracy_Tri <- c()
+index = 0
+for (i in k_number) { 
+        index = index + 1
+        kModBin <- knn(train= train_Trinary, test=test_Trinary, cl=train_Trinary$label, k=i )
+        accuracy_Tri[index] <- 100*sum(test_Trinary$label == kModBin)/NROW(test_Trinary$label)
+}
+accuracy_df <- cbind(accuracy_df,accuracy_Tri)
+head(accuracy_df)
+```
+**Accuracy plot**
+
+```{r echo=FALSE, comment=NA, warning=FALSE, message=FALSE}
+ggplot(accuracy_df, aes(x = k_number)) + 
+  geom_point(aes(y = accuracy_Bin, colour= "accuracy_Bin")) + 
+  geom_point(aes(y = accuracy_Tri, colour= "accuracy_Tri")) + 
+  scale_colour_manual("", 
+                      breaks = c("accuracy_Bin", "accuracy_Tri"), 
+                      values = c("accuracy_Bin" = "red", "accuracy_Tri" = "blue")
+                      ) + xlab("K values") + ylab("Accuracy") +
+  scale_y_continuous("Accuracy", limits = c(90,99))
+```
+
+1.e.v) Based on the accuracy of the models, a linear classifier such as K-nearest neighbor (KNN) is the most effective model when dealing with datasets containing ordinal outputs (i.e. 0's and 1's). With accuracy values above 90% for the KNN model with different k values, the model is a good representation of the given datasets and it can be used to predict the output with high confidence. One key difference between both datasets is that the accuracy on the trinary classifier dataset appears to decrease as the k value increases, thus suggesting that the k=5 is the ideal parameter for our dataset and increasing the k value will further decrease the accuracy of the model. 
+
+1.e.vi) Based on the accuracy of both models, K-nearest neighbor (KNN) performed significantly better than logistic regression at predicting categorical data with 98% accuracy compared to the logistic model's 58% accuracy. Since the dependent value ('label') of our binary dataset contains categorical data, logistic regression, which is often used to find the probability of an event occurring using a sigmoid function, will either bump up or drop the expected probability to a discrete value, thereby compromising the accuracy of the logistic model. Additionally, the KNN model generally gives you highly accurate predictions with no real-life relatability compared to the logistic regression. 
+
+## K-Mean Clustering
+**Cluster Dataset Scatter Plot**
+
+```{r echo=FALSE, comment=NA, warning=FALSE, message=FALSE}
+cluster_df <- read.csv("clustering-data.csv")
+ggplot(cluster_df, aes(x= x, y= y)) + geom_point(size= 0.01) 
+```
+
+**Visualizing Clusters**
+
+```{r echo=FALSE, comment=NA, warning=FALSE, message=FALSE}
+
+set.seed(195)
+library(ggfortify)
+library(ggplot2)
+for (i in 2:12){
+  KM_cluster <- kmeans(cluster_df,i, nstart = 25)
+  print(autoplot(KM_cluster, cluster_df, frame = TRUE))
+  print(paste("Cluster plot with k = ",i))
+}
+```
+
+
+**Elbow Method**
+
+```{r echo=FALSE, comment=NA, warning=FALSE, message=FALSE}
+library(factoextra)
+fviz_nbclust(cluster_df, kmeans, method= "wss") + labs(subtitle = "Elbow method")
+```
+**Based on the Elbow Method chart above, we can conclude the optimal number, or the 'Elbow Point', of the dataset is k = 5.**
