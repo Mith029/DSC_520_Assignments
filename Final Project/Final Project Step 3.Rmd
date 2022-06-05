@@ -1,0 +1,148 @@
+---
+title: "Final Project Step 3"
+author: "Mithil Patel"
+date: '2022-06-04'
+output: pdf_document
+---
+## Introduction
+
+One of the leading causes of death in the United States every year is heart disease resulting in one out of every four deaths. Cardiovascular disease results in approximately 659,000 deaths yearly and while the CDC and other public health organizations have spent hundreds of millions of dollars on the budget for reducing heart disease-related deaths, it has still been a primary concern for the past several years. The lack of progression in the cardiovascular research field led me to pursue an alternate solution for the problem, one such solution being the usage of data science. With data science, we have the possibility of solving many of the world’s issues such as cardiovascular disease with in-depth analysis. The utilization of many predictive tools in data science will help us understand what certain health factors can affect a patient’s risk for heart disease. For example, one of the leading risk factors for heart disease is cholesterol, and exploring data for this factor will be crucial in reducing the disease. A predictive model will be created to determine the risk factors that we’ve selected from our datasets and explored to see what drives the prediction. Feedback from the model can assist individuals to detect and monitor the long-term risk factors to reduce the chances of having heart disease. This study will be advantageous to doctors and patients who will be able to use the analysis to promote a healthier lifestyle.
+
+## The problem statement you addressed
+
+The purpose of the project is to investigate the leading cause of death in the U.S. and shed light on which health factors can significantly affect a patient's risk for heart disease. We shall create a logistic model as well as a k-nearest neighbors (KNN) model to explore the relationship between cardiovascular disease and potential risk factor to propose the likely cause of cardiovascular-related death and provide recommendations to reduce the risk of heart disease.
+
+## Procedure
+
+**Final Dataset sample**
+
+```{r include= FALSE, echo=FALSE, comment= NA, warning=FALSE, message=FALSE}
+library(dplyr)
+
+df_cardio <- read.csv("framingham.csv")
+df_heart <- read.csv("heart.csv")
+
+new_cardio_df <- head(df_cardio, 1025)
+combined_df <- bind_rows(new_cardio_df,df_heart)
+sapply(combined_df, function(x) sum(is.na(x)))
+
+combined_df[] <- lapply(combined_df, function(x){
+  x[is.na(x)] <- round(mean(x,na.rm = TRUE))
+  x})
+sapply(combined_df, function(x) sum(is.na(x)))
+combined_df <- combined_df %>% select(target, everything())
+round(cor(combined_df),2)
+
+combined_df <- combined_df %>% 
+  select(sex, cp, thalach, oldpeak, slope, ca, target)
+combined_df <- tail(combined_df, 1025)
+```
+
+```{r echo=FALSE, comment= NA, warning=FALSE, message=FALSE}
+tail(combined_df,10)
+```
+**Boxplots to detect outliers**
+
+```{r echo=FALSE}
+boxplot(combined_df)
+```
+The boxplot above shows several outliers exist in our dataset. We can handle the outlier values by simple removing the rows from our dataset. 
+
+**Scatterplot: thalach vs target**
+
+```{r echo=FALSE, comment= NA, warning=FALSE, message=FALSE}
+library(ggplot2)
+ggplot(combined_df, aes(x= thalach, y= target)) + geom_point(size= 0.1) + geom_point(aes(color= target))
+```
+
+**Logistic Regression Summary**
+```{r  echo=FALSE, comment= NA, warning=FALSE, message=FALSE}
+set.seed(519)
+library(foreign)
+library(caTools)
+combinedDF_split <- sample.split(combined_df, SplitRatio = 0.8)
+train_data <- subset(combined_df, combinedDF_split == "TRUE")
+test_data <- subset(combined_df, combinedDF_split == "FALSE")
+
+log_regression <- glm(target ~ sex + cp + thalach + oldpeak + slope + ca, data = combined_df, family = binomial())
+summary(log_regression)
+```
+
+**Multicollinearity Condition**
+
+```{r echo=FALSE, comment= NA, warning=FALSE, message=FALSE}
+library(car)
+mean(vif(log_regression))
+mean(1/vif(log_regression))
+```
+
+**The accuracy of our logistic model is:**
+
+```{r echo=FALSE, comment= NA, warning=FALSE, message=FALSE}
+glm_test_Pred <- predict(log_regression, test_data, type = "response")
+glm_train_pred <- predict(log_regression, train_data, type = "response")
+
+confusion_matrix <- table(true_val = train_data$target, 
+                          predicted_val = glm_train_pred > 0.5)
+100*((confusion_matrix[[1,1]] + confusion_matrix[[2,2]])/sum(confusion_matrix))
+```
+
+**K-nearest neighbor (KNN) model accuracy table**
+
+```{r echo=FALSE, comment= NA, warning=FALSE, message=FALSE}
+set.seed(251)
+library(caret)
+library(class)
+
+training_Index=createDataPartition(combined_df$target, p=0.8)$Resample1
+train_knn = combined_df[training_Index,] 
+test_knn = combined_df[-training_Index,]
+
+k_number = c(2, 3, 5, 10, 15, 20, 25)
+accuracy <- c()
+index = 0
+for (i in k_number) { 
+        index = index + 1
+        kModBin <- knn(train= train_knn, test=test_knn, cl=train_knn$target, k=i )
+        accuracy[index] <- 100*sum(test_knn$target == kModBin)/NROW(test_knn$target)
+}
+
+accuracy_df <- data.frame(k_number,accuracy)
+print(accuracy_df)
+```
+
+```{r include=FALSE, echo=FALSE, comment= NA, warning=FALSE, message=FALSE}
+library(dplyr)
+perf_df <- read.csv("bodyPerformance.csv")
+perf_df <- perf_df %>%
+  select(-class,-gender)
+round(cor(perf_df),2)
+```
+
+
+
+## How you addressed this problem statement
+
+For the problem we want to address, I first needed to find a proper dataset to extract insight from the data and use its valuable information to make predictions about a particular topic. For our case, I needed a dataset with physiological characteristics (height, weight, etc), glucose level, cholesterol level, blood pressure, daily habits (smoking, alcohol consumption, exercising) as well as whether a person has cardiovascular disease. In addition, I needed a dataset that looked at the overall effect of exercise on a person’s internal body such as blood pressure and cholesterol level.
+
+  Once datasets were gathered, I went through the process of cleaning and combining datasets into one using their similar variables/columns. Afterward, I received rows with empty values that did not match and removed them to not skew the dataset. Then, I used the cor() function to generate a correlation matrix to determine the variables that were correlated to the 'target' variables (closer to 1 meaning positive for heart disease, 0 indicating otherwise). To determine relevant columns, the variables with a correlation coefficient above 0.20 or below -0.20 were selected. Box plots were used after the final dataset was ready to detect outliers in each column. Given the abundant number of data points, the rows with outliers were removed from the dataset. 
+  
+  To perform logistic regression, the dataset was split into training and testing sets with 80% of the data going into training while 20% going into testing our model. Before the accuracy of our model is determined, I used the VIF function and tolerance to test for no multicollinearity in our dataset. As shown above, the mean VIF value is close to 1 and the mean tolerance is above 0.2, we can conclude that the no multicollinearity condition is met, thus our dataset is not biased. It also suggests that the predictors are not highly correlated with one another and they can accurately provide useful information about the dependent variable. To test the accuracy of our model, the confusion matrix was calculated to be approximately 82%. To further improve the accuracy, a supervised machine learning algorithm called k-nearest neighbors (KNN) to create a model. Based on the accuracy of our KNN model with different k numbers, it is evident that KNN outperformed the logistic model with a model accuracy of 97.07% when k = 2.
+	
+## Analysis
+
+The logistic model summary seems to suggest that the cp (chest pain) predictor has the greatest effect on heart disease. Analyzing the performance of our both model, it is evident that the KNN model was more accurate in predicting the heart disease based on our independent variable compare to the logistic model. Considering that the output variable is categorical, logistic model will typically raise or lower the predicted probability to a discrete value and, as a result, lowering the accuracy of the model. 
+
+While evaluating variables to include to our model using the correlation matrix, I was surprised to find variables not strongly correlated with heart disease. Diastolic and systolic blood pressure, which measures the blood pressure in the arteries when the heart rests and when the heart beats, respectively, were not strongly correlated with body performance. Subsequently, a model exploring a relationship between body performance (i.e. sit-ups) and heart disease could not be created. Hence, I was unable to provide patients and doctors, with overwhelming statistical evidence, several lifestyle changes such as doing sit-ups daily to potentially lower the risk of cardiovascular disease. 
+
+## Implications
+
+Our analysis shows that the predictors used in our model are a notable contributor to cardiovascular disease. Therefore, individuals can keep track of these variables (i.e. maximum heart rate or chest pain) and hopefully be able to take measures to avoid life-threatening consequences. Individuals with the inflated blood vessels of the coronary artery or achieving maximum heart rate on daily basis shall understand the underlying risk associated with their condition and should seek medical attention. Another implication from our analysis, though not so prominent, is that body performance such as performing set-ups is not correlated with Diastolic and systolic blood pressure - blood pressure measurements to determine a health heart. Consequently, several body performance seems to have little to no effect on heart disease.
+
+## Limitations
+
+There were many limitations I came across while working on my research project, from finding the right dataset to cleaning and merging different datasets. One such limitation would be when I had to combine different data sets, which resulted in disregarding multiple variables from each such as smoking, cholesterol, and alcohol consumption. Two different datasets were stacked on top of each with one common column ’target’,  it was difficult to include other variables to the final dataset as  multiple entries of the combined dataset were filled with empty (N/A) values that could not be processed. For the future steps, it would be helpful to find an efficient means to merge the two datasets by similar variables types/columns to avoid a plethora of empty values within the combination. Another limitation I encountered was not being able to find desired datasets to investigate several factors (i.e. running or food) that could directly reduce heart disease. Factors that individuals can incorporate into their lives that could significantly benefit their body. Ergo, there exist a lack of datasets available to process for an accurate relationship.
+
+## Concluding Remarks
+
+As I learned that the cardiovascular disease is the leading cause of death in the United States, I wanted to find ways to reduce the number of deaths and spread awareness for the potential risk factors. By creating a predictive model using a logistic regression, I can investigate which health factors can significantly affect a patient’s risk for heart disease and what steps an individual can take to lead a potentially better lifestyle. The relatively high accuracy of our model (82 percent) suggest that the variables (sex, chest pain, maximum heart rate, ST depression, peak ST segment, and the number of inflated major vessels) used in our model are good predictors of heart disease. A change in one of the predictors can significantly affect the likelihood of an individual having a heart disease. For example, an increase in chest pain can be a good indicator that one is suffering from a cardiovascular disease. Our conclusion can be further supported by the high accuracy (97 percent) of our KNN model. While the results should not be revered as a guideline for an individual’s view on heart disease, it can be the extra step taken for them to identify the concerns. Future data science enthusiast have plenty of opportunity to build upon this study with proper datasets. For example, they can find an effective method to merge multiple datasets with similar column while preserving the number of rows and columns. Frankly, there is always a room for improvement. 
